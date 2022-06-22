@@ -6,7 +6,17 @@
 #include <sstream>
 #include <iostream>
 
+Shader::Shader()
+{
+	ID = NULL;
+}
+
 Shader::Shader(const std::string& vPath, const std::string& fPath)
+{
+	loadShaders(vPath, fPath);
+}
+
+void Shader::loadShaders(const std::string& vPath, const std::string& fPath)
 {
 	std::string vCode, fCode;
 	std::ifstream vShaderFile, fShaderFile;

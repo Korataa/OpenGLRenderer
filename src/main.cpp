@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../include/Shader.h"
+#include "../include/Renderer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -21,6 +22,28 @@ const std::string vShaderPath = "resources/shaders/shader.vert";
 const std::string fShaderPath = "resources/shaders/shader.frag";
 
 int main()
+{
+	Renderer renderer;
+	if (!renderer.initOpenGL())
+	{
+		std::cout << "Something went wrong when loading the renderer!" << std::endl;
+		return -1;
+	}
+
+	if (!renderer.startRendering())
+	{
+		std::cout << "Renderer already running or something went wrong" << std::endl;
+		return -1;
+	}
+	else
+	{
+		std::cout << "Renderer closed or shut down" << std::endl;
+		renderer.destroy();
+	}
+	return 0;
+}
+
+int main3()
 {
 	//glfw: initialize and configure
 	glfwInit();

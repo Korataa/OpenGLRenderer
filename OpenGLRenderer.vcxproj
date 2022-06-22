@@ -72,8 +72,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\dev\Libraries\OpenGL\libs;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\dev\Libraries\OpenGL\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Dev\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Dev\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -133,8 +133,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\OpenGLObject.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
@@ -143,6 +145,8 @@
     <None Include="resources\shaders\shader.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\OpenGLObject.h" />
     <ClInclude Include="include\Renderer.h" />
     <ClInclude Include="include\Shader.h" />
   </ItemGroup>

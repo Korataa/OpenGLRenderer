@@ -1,77 +1,264 @@
 #include "../include/Renderer.h"
 
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
+#include <vector>
+
+void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void mouseCallback(GLFWwindow* window, double posX, double posY);
+bool mouseHasMoved = false;
+float lastX;
+float lastY;
+
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 
 const std::string vShaderPath = "resources/shaders/shader.vert";
 const std::string fShaderPath = "resources/shaders/shader.frag";
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+const glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 7.0f);
+const glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-Renderer::Renderer() : shader(vShaderPath, fShaderPath)
-{ 
+std::vector<GLfloat> vertices = {
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+};
+
+Renderer::Renderer() : camera(cameraPosition, worldUp)
+{
+	isRunning = false;
+	VBO = NULL;
+	VAO = NULL;
+	window = NULL;
+	projection = glm::mat4(1.0);
+
+	deltaTime = 0;
+	lastFrame = 0;
 }
 
-int Renderer::InitOpenGL()
+bool Renderer::initOpenGL()
 {
-	//Initialize glfw and configure it!
+	// glfw: initialize and configure
+	// ------------------------------
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//Create an openGL window
-	this->window = glfwCreateWindow(800, 600, "My 3D Renderer", NULL, NULL);
-	if (this->window == NULL)
+	// glfw window creation
+	// --------------------
+	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "My Renderer", NULL, NULL);
+	if (window == NULL)
 	{
-		//Failed to create window so we terminate glfw and handle other closing stuff
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
-		return -1;
+		return false;
 	}
-	glfwMakeContextCurrent(this->window);
+	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	//Glad
-	//load all OpenGL function pointers
+
+	// glad: load all OpenGL function pointers
+	// ---------------------------------------
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
+		return false;
 	}
 
-	glGenVertexArrays(1, &this->VAO);
-	glGenBuffers(1, &this->VBO);
-	glBindVertexArray(this->VAO);
+	// configure global opengl state
+	// -----------------------------
+	glEnable(GL_DEPTH_TEST);
 
-	//we copy our vertices vector into a buffer so openGL can use it
-	//&vertices[0] points to the first element of the vector and vectors in c++ are stored contiguously
-	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+	// build and compile our shader zprogram
+	// ------------------------------------
+	shader.loadShaders("resources/shaders/shader.vert", "resources/shaders/shader.frag");
+
+	objects.push_back(OpenGLObject(glm::vec3(0.0f, 3.0f, 0.0f), vertices));
+	objects.push_back(OpenGLObject(glm::vec3(2.0f, 0.0f, -3.0f), vertices));
+	objects.push_back(OpenGLObject(glm::vec3(0.0f, -2.0f, 0.0f), vertices));
+
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
 
-	//vertex attrib pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	return true;
 }
 
-bool Renderer::StartRendering()
+bool Renderer::startRendering()
 {
 	if (isRunning)
 	{
-		//we return because 
+		//we return because we dont want to run the renderer 2 times
 		return false;
 	}
-	this->isRunning = true;
-	//Main loop
+	isRunning = true;
+	//Main loop, the app "lives" inside here
 	while (isRunning)
 	{
 		//Blah blah main loop stuff
+		if (glfwWindowShouldClose(window))
+		{
+			isRunning = false;
+			//renderer closed successfully so return true
+			return true;
+		}
+
+		//Delta time stuff
+		float time = glfwGetTime();
+		deltaTime = time - lastFrame;
+		lastFrame = time;
+
+		// input
+		// -----
+		processInput(window);
+
+		//update
+		camera.update();
+
+		// render
+		// ------
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
+
+		// activate shader
+		shader.use();
+
+		// create transformations // make sure to initialize matrix to identity matrix first
+		projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+
+		// note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", camera.view);
+
+		// render box
+		glBindVertexArray(VAO);
+		for (int i = 0; i < objects.size(); ++i)
+		{
+			shader.setMat4("model", objects[i].model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+		// -------------------------------------------------------------------------------
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
+	//deallocate resources
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+
+	glfwTerminate();
+	return true;
+
+}
+
+void Renderer::processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+
+	//CAMERA
+	//Keyboard movement
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.handleKeyboardInput(FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.handleKeyboardInput(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.handleKeyboardInput(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.handleKeyboardInput(RIGHT, deltaTime);
+
+	//Mouse movement
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	camera.handleMouseInput(xpos, ypos);
+}
+
+void Renderer::destroy()
+{
+	//deallocate resources
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+
+	glfwTerminate();
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+}
+
+void mouseCallback(GLFWwindow* window, double posX, double posY)
+{
+	float x = (float)posX;
+	float y = (float)posY;
+
+	if (!mouseHasMoved)
+	{
+		//start tracking mouse
+		lastX = x;
+		lastY = y;
+		mouseHasMoved = true;
+	}
+
+	float offsetX = x - lastX;
+	float offsetY = lastY - y;
+
+	lastX = x;
+	lastY = y;
+
+	//camera.handleMouseInput(offsetX, offsetY);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
@@ -7,31 +8,34 @@
 #include <string>
 
 #include "Shader.h"
+#include "Camera.h"
+#include "OpenGLObject.h"
 
 class Renderer
 {
 public:
 	Renderer();
 
-	int InitOpenGL();
-	bool StartRendering();
-	bool StopRendering();
+	bool initOpenGL();
+	bool startRendering();
+	bool stopRendering();
 	void destroy();
+
+public:
+	glm::mat4 projection;	//projection matrix for clip space
 	
 private:
 	GLFWwindow* window;
 	Shader shader;
+	Camera camera;
 
-	//all the vertices
-	std::vector<GLfloat> vertices = {
-		-0.5f, -0.5f, 0.0f,	//left
-		 0.5f, -0.5f, 0.0f,	//right
-		 0.0f,  0.5f, 0.0f,	//top
-	};
+	std::vector<OpenGLObject> objects;
 	
 	//Buffers
 	unsigned int VBO, VAO;
+	bool isRunning;
+	float deltaTime, lastFrame;
 
 private:
-	bool isRunning;
+	void processInput(GLFWwindow* window);
 };

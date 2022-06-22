@@ -12,8 +12,11 @@ class Shader
 public:
 	unsigned int ID;
 
+	Shader();
 	Shader(const std::string& vPath, const std::string& fPath);
 	~Shader();
+
+	void loadShaders(const std::string& vPath, const std::string& fPath);
 
 	void use();
 
