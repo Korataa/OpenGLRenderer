@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <vector>
+#include "../include/Light.h"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double posX, double posY);
@@ -66,6 +67,11 @@ std::vector<GLfloat> vertices = {
 	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
+Light light(glm::vec3(1.2f, 1.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+Shader lightingShader;
+
+unsigned int lightVAO;
+
 Renderer::Renderer() : camera(cameraPosition, worldUp)
 {
 	isRunning = false;
@@ -116,8 +122,11 @@ bool Renderer::initOpenGL()
 	// build and compile our shader zprogram
 	// ------------------------------------
 	shader.loadShaders("resources/shaders/shader.vert", "resources/shaders/shader.frag");
+	lightingShader.loadShaders("resources/shaders/shader.vert", "resources/shaders/lighting.frag");
 
-	objects.push_back(OpenGLObject(glm::vec3(0.0f, 3.0f, 0.0f), vertices));
+	light.vertices = vertices;
+
+	objects.push_back(OpenGLObject(glm::vec3(0.0f, 3.0f, 0.60f), vertices));
 	objects.push_back(OpenGLObject(glm::vec3(2.0f, 0.0f, -3.0f), vertices));
 	objects.push_back(OpenGLObject(glm::vec3(0.0f, -2.0f, 0.0f), vertices));
 
@@ -131,6 +140,18 @@ bool Renderer::initOpenGL()
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	//lighr cube stuff
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
+	glEnableVertexAttribArray(0);
+	
+	shader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+	shader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
 	return true;
 }
@@ -189,6 +210,17 @@ bool Renderer::startRendering()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		lightingShader.use();
+
+		glm::mat4 lightModel = glm::mat4(1.0);
+		lightModel = glm::translate(lightModel, light.position);
+		lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+		lightingShader.setMat4("projection", projection);
+		lightingShader.setMat4("view", camera.view);
+		lightingShader.setMat4("model", lightModel);
+
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);

@@ -15,4 +15,5 @@ public:
 
 	OpenGLObject(const glm::vec3& position, const std::vector<GLfloat>& vertices);
 	OpenGLObject(const float x, const float y, const float z, const std::vector<GLfloat>& vertices);
+	OpenGLObject();
 };
