@@ -10,6 +10,8 @@
     <ClCompile Include="src\OpenGLObject.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Light.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header">
@@ -30,5 +32,7 @@
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\OpenGLObject.h" />
     <ClInclude Include="include\Light.h" />
+    <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\Model.h" />
   </ItemGroup>
 </Project>
