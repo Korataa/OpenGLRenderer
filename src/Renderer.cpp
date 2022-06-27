@@ -6,7 +6,10 @@
 
 #include <iostream>
 #include <vector>
+#include <filesystem>
+
 #include "../include/Light.h"
+#include "../include/Model.h"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double posX, double posY);
@@ -20,8 +23,12 @@ const int SCREEN_HEIGHT = 600;
 const std::string vShaderPath = "resources/shaders/shader.vert";
 const std::string fShaderPath = "resources/shaders/shader.frag";
 
+const std::string rootDirectory = "C:\Dev\OpenGLRenderer";
+
 const glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 7.0f);
 const glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+Model ourModel;
 
 std::vector<GLfloat> vertices = 
 {
@@ -126,6 +133,9 @@ bool Renderer::initOpenGL()
 	// ------------------------------------
 	shader.loadShaders("resources/shaders/shader.vert", "resources/shaders/shader.frag");
 	lightingShader.loadShaders("resources/shaders/shader.vert", "resources/shaders/lighting.frag");
+	std::filesystem::path path = std::filesystem::current_path();
+
+	ourModel.load(("resources/3DModels/backpack/backpack.obj"));
 
 	light.vertices = vertices;
 
@@ -213,25 +223,12 @@ bool Renderer::startRendering()
 		//lighting
 		shader.setVec3("viewPos", camera.position);
 
-		// render box
-		glBindVertexArray(VAO);
-		for (int i = 0; i < objects.size(); ++i)
-		{
-			shader.setMat4("model", objects[i].model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+		shader.setMat4("model", model);
+		ourModel.Draw(shader);
 
-		lightingShader.use();
-
-		glm::mat4 lightModel = glm::mat4(1.0);
-		lightModel = glm::translate(lightModel, light.position);
-		lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-		lightingShader.setMat4("projection", projection);
-		lightingShader.setMat4("view", camera.view);
-		lightingShader.setMat4("model", lightModel);
-
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);

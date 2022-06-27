@@ -10,6 +10,12 @@ uniform vec3 objectColor;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 
+uniform sampler2D diffuse1;
+uniform sampler2D diffuse2;
+uniform sampler2D diffuse3;
+uniform sampler2D specular1;
+uniform sampler2D specular2;
+
 void main()
 {
 	vec3 norm = normalize(Normal);
