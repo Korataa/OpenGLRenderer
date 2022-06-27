@@ -89,7 +89,7 @@ bool Renderer::initOpenGL()
 	
 	std::filesystem::path path = std::filesystem::current_path();
 
-	ourModel.load("resources/3DModels/backpack/backpack.obj");
+	ourModel.load("resources/3DModels/WoodCylinder/wood_cylinder.obj");
 	
 	//shader.use();
 	//shader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);

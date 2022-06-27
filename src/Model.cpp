@@ -25,11 +25,11 @@ void Model::Draw(Shader& shader)
 void Model::load(std::string path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
 
 	if (!scene)
 	{
-		std::cout << "Error->ASSIMP" << std::endl;
+		std::cout << "Error->ASSIMP: " << importer.GetErrorString() << std::endl;
 	}
 	else
 	{
@@ -149,7 +149,7 @@ int Model::loadTextureFromFile(std::string fileName)
 	std::string fullFilePath = modelDirectory + "/" + fileName;
 	std::cout << "fullFilePath of texture: " << fullFilePath << std::endl;
 
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(fullFilePath.c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{
