@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -136,7 +136,6 @@
   <ItemGroup>
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Light.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Model.cpp" />
@@ -145,6 +144,8 @@
     <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include="resources\3DModels\backpack\backpack.mtl" />
     <None Include="resources\shaders\lighting.frag" />
     <None Include="resources\shaders\shader.frag" />
     <None Include="resources\shaders\shader.vert" />
@@ -157,6 +158,16 @@
     <ClInclude Include="include\OpenGLObject.h" />
     <ClInclude Include="include\Renderer.h" />
     <ClInclude Include="include\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\3DModels\backpack\ao.jpg" />
+    <Image Include="resources\3DModels\backpack\diffuse.jpg" />
+    <Image Include="resources\3DModels\backpack\normal.png" />
+    <Image Include="resources\3DModels\backpack\roughness.jpg" />
+    <Image Include="resources\3DModels\backpack\specular.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\3DModels\backpack\source_attribution.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

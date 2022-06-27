@@ -16,6 +16,7 @@ class Model
 public:
 	std::vector<Mesh> meshes;
 	std::string modelDirectory;
+	std::vector<Texture> loadedTextures;
 
 	Model();
 	Model(std::string path);
@@ -27,3 +28,4 @@ public:
 	int loadTextureFromFile(std::string fileName);
 
 };
+

@@ -31,9 +31,12 @@ void Model::load(std::string path)
 	{
 		std::cout << "Error->ASSIMP" << std::endl;
 	}
-	modelDirectory = path.substr(0, path.find_last_of("/"));
-	
-	loadNode(scene, scene->mRootNode);
+	else
+	{
+		modelDirectory = path.substr(0, path.find_last_of("/"));
+
+		loadNode(scene, scene->mRootNode);
+	}
 }
 
 void Model::loadNode(const aiScene* scene, aiNode* node)
@@ -41,7 +44,7 @@ void Model::loadNode(const aiScene* scene, aiNode* node)
 	for (int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		this->meshes.push_back(this->loadMesh(scene, mesh));
+		this->meshes.push_back(loadMesh(scene, mesh));
 	}
 
 	//Handle the children
@@ -66,10 +69,12 @@ Mesh Model::loadMesh(const aiScene* scene, aiMesh* mesh)
 		{
 			vertex.textureCoordinates.x = mesh->mTextureCoords[0][i].x;
 			vertex.textureCoordinates.y = mesh->mTextureCoords[0][i].y;
+			
 		}
 		else
 		{
 			vertex.textureCoordinates = glm::vec2(0.0);
+			std::cout << "TExtURE COORDS ARE 0" << std::endl;
 		}
 
 		vertex.normal.x = mesh->mNormals[i].x;
@@ -79,13 +84,13 @@ Mesh Model::loadMesh(const aiScene* scene, aiMesh* mesh)
 		vertices.push_back(vertex);
 	}
 
-	std::vector<int> indices;
+	std::vector<unsigned int> indices;
 	for (int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
 		for (int j = 0; j < face.mNumIndices; j++)
 		{
-			indices.push_back(face.mIndices[i]);
+			indices.push_back(face.mIndices[j]);
 		}
 	}
 
@@ -100,21 +105,36 @@ Mesh Model::loadMesh(const aiScene* scene, aiMesh* mesh)
 
 	}
 
-	return Mesh(vertices, textures, indices);
+	return Mesh(vertices, indices, textures);
 }
 
 std::vector<Texture> Model::loadTexturesFromMaterial(aiMaterial* material, aiTextureType type, std::string typeName)
 {
 	std::vector<Texture> textures;
-	for (int i = 0; material->GetTextureCount(type); i++)
+	for (int i = 0; i < material->GetTextureCount(type); i++)
 	{
 		aiString path;
 		material->GetTexture(type, i, &path);
-		Texture texture;
-		texture.ID = loadTextureFromFile(path.C_Str());
-		texture.type = type;
-		texture.path = path.C_Str();
-		textures.push_back(texture);
+		//check if texture was alreaeady loaded and if so, continue to next thingy
+		bool skip = false;
+		for (int j = 0; j < loadedTextures.size(); j++)
+		{
+			if (std::strcmp(loadedTextures[j].path.data(), path.C_Str()) == 0)
+			{
+				textures.push_back(loadedTextures[j]);
+				skip = true;
+				break;
+			}
+		}
+		if (!skip)
+		{
+			Texture texture;
+			texture.ID = loadTextureFromFile(path.C_Str());
+			texture.type = typeName;
+			texture.path = path.C_Str();
+			textures.push_back(texture);
+			loadedTextures.push_back(texture);
+		}
 	}
 
 	return textures;
@@ -127,6 +147,9 @@ int Model::loadTextureFromFile(std::string fileName)
 
 	int width, height, nrChannels;
 	std::string fullFilePath = modelDirectory + "/" + fileName;
+	std::cout << "fullFilePath of texture: " << fullFilePath << std::endl;
+
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(fullFilePath.c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{

@@ -1,6 +1,8 @@
 #include "../include/Mesh.h"
 
-void Mesh::Draw(Shader shader)
+#include <iostream>
+
+void Mesh::Draw(Shader& shader)
 {
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
@@ -14,19 +16,23 @@ void Mesh::Draw(Shader shader)
 			number = std::to_string(diffuseNr++);
 		else if (name == "specular")
 			number = std::to_string(specularNr++);
-
-		shader.setInt((name + number).c_str(), i);
+      
+        glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].ID);
 	}
-	glActiveTexture(GL_TEXTURE0);
 
+    //Draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+    glActiveTexture(GL_TEXTURE0);
 }
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<Texture> textures, std::vector<int> indices) : vertices(vertices), textures(textures), indices(indices)
-{}
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) : vertices(vertices), textures(textures), indices(indices)
+{
+    setupMesh();
+}
 
 void Mesh::setupMesh()
 {

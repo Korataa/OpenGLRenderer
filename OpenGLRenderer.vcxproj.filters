@@ -4,7 +4,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\OpenGLObject.cpp" />
@@ -25,6 +24,8 @@
     <None Include="resources\shaders\shader.frag" />
     <None Include="resources\shaders\shader.vert" />
     <None Include="resources\shaders\lighting.frag" />
+    <None Include=".gitignore" />
+    <None Include="resources\3DModels\backpack\backpack.mtl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Shader.h" />
@@ -34,5 +35,15 @@
     <ClInclude Include="include\Light.h" />
     <ClInclude Include="include\Mesh.h" />
     <ClInclude Include="include\Model.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\3DModels\backpack\ao.jpg" />
+    <Image Include="resources\3DModels\backpack\diffuse.jpg" />
+    <Image Include="resources\3DModels\backpack\normal.png" />
+    <Image Include="resources\3DModels\backpack\roughness.jpg" />
+    <Image Include="resources\3DModels\backpack\specular.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\3DModels\backpack\source_attribution.txt" />
   </ItemGroup>
 </Project>
